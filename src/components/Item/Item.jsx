@@ -43,6 +43,7 @@ class Item extends Component {
     this._getOrCreateItem = this._getOrCreateItem.bind(this);
     this._submitAttribute = this._submitAttribute.bind(this);
     this._deleteAttribute = this._deleteAttribute.bind(this);
+    this._deleteResource = this._deleteResource.bind(this);
     this.user=conf.user || window.location.hostname.split('.', 1)[0];
   }
 
@@ -50,6 +51,7 @@ class Item extends Component {
     let name = getString(this.state.item[itemView.name]);
     let attributes = this._getAttributes();
     let viewpoints = this._getViewpoints();
+    let resources = this._getResources();
     return (
       <div className="App container-fluid">
         <Header />
@@ -72,6 +74,16 @@ class Item extends Component {
                   </div>
                   {this._getAttributeCreationForm()}
                   {viewpoints}
+                  <h3 className="h4">Ressources</h3>
+                  <hr/>
+                  <div className="Resources">
+                    {resources}
+                  </div>
+                  <div className="text-center">
+                    <button type="button" className="btn btn-sm btn-light">
+                      Ajouter une ressource
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -101,6 +113,31 @@ class Item extends Component {
       <Viewpoint key={v[0]} id={v[0]} topics={v[1]}
         assignTopic={this._assignTopic} removeTopic={this._removeTopic} />
     );
+  }
+
+  _getResources() {
+    // TODO: Use CouchDB attachments to retrieve them from the server
+    const resources = {
+      "exemple.mp4": {
+        type: "file",
+        key: 0
+      },
+      "GitHub": {
+        type: "link",
+        url: "https://github.com",
+        key: 1
+      }
+    };
+
+    return Object.entries(resources).map(resource =>
+      <Resource
+        type={resource[1].type}
+        name={resource[0]}
+        url={resource[1].url || null}
+        deleteResource={this._deleteResource}
+        key={resource[1].key}
+      />
+    )
   }
 
   componentDidMount() {
@@ -277,6 +314,10 @@ class Item extends Component {
       .catch(_error);
   }
 
+  _deleteResource(key) {
+    window.alert("TODO: Implement resource deletion");
+  }
+
   _assignTopic(topicToAssign, viewpointId) {
     return this._getOrCreateItem()
       .then(data => {
@@ -407,6 +448,62 @@ class Attribute extends Component {
       </div>
     );
     }
+}
+
+class Resource extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      edit: false
+    };
+  }
+
+  setEdit = (event) => {
+    this.setState({
+      edit: true,
+      editedValue: this.props.value
+    });
+  }
+
+  render() {
+    let editButton;
+    let deleteButton;
+    if (!this.state.edit) {
+      editButton = (
+        <button onClick={this.setEdit} className="btn btn-xs EditButton">
+          <span className="oi oi-pencil"> </span>
+        </button>
+      );
+      deleteButton = (
+        <button onClick={this.props.deleteResource.bind(this,this.props.myKey)} className="btn btn-xs DeleteButton">
+          <span className="oi oi-x"> </span>
+        </button>
+      );
+    } else {
+      editButton = null;
+      deleteButton = null;
+    }
+
+    let resourceName;
+    if (this.props.type === "link") {
+      resourceName = <a href={this.props.url}>{this.props.name}</a>
+    } else if (this.props.type === "file") {
+      resourceName = <div>{this.props.name}</div>
+    } else {
+      console.error(`Invalid resource type: ${this.props.type}`)
+    }
+
+    return (
+      <div className="Resource">
+        {resourceName}
+        <div className="buttons">
+          {editButton}
+          {deleteButton}
+        </div>
+      </div>
+    )
+  }
 }
 
 function ShowItem(props) {

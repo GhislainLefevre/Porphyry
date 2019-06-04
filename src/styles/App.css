@@ -183,6 +183,15 @@ h1 a, h1 a:hover {
   visibility: hidden;
 }
 
+.Resource {
+  display: table-row;
+}
+
+.Resource .buttons {
+  display: table-cell;
+  white-space: nowrap;
+}
+
 div:hover > .buttons > button,
 div:hover > .DeleteButton,
 div:hover > .EditButton {
